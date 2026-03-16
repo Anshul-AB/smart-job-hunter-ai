@@ -2,17 +2,41 @@ import mongoose from "mongoose";
 
 const jobSchema = new mongoose.Schema({
 
-  title: String,
+  title: {
+    type: String,
+    required: true
+  },
 
-  company: String,
+  company: {
+    type: String,
+    required: true
+  },
 
-  location: String,
+  location: {
+    type: String,
+    required: true
+  },
 
-  description: String,
+  description: {
+    type: String,
+    required: true
+  },
 
-  requiredSkills: [String],
+  requiredSkills: [
+    {
+      type: String
+    }
+  ],
 
-  applyLink: String
+  applyLink: {
+    type: String,
+    required: true
+  },
+  
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+}
 
 }, { timestamps: true });
 
