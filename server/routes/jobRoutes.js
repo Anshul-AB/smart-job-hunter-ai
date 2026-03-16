@@ -3,6 +3,6 @@ import createJob from "../controllers/jobControllers.js"
 
 const router = express.Router()
 
-router.post("/create", createJob)
+router.post("/", createJob)
 
 export default router

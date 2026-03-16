@@ -21,7 +21,7 @@ app.use(express.json());
 // ROUTES MIDDLEWARE
 app.use("/api/auth", authRoutes);
 app.use("/api/user", authMiddleware, getProfileRoute);
-app.use("/api/job", authMiddleware, jobRoutes)
+app.use("/api/jobs", authMiddleware, jobRoutes)
 
 app.get("/", (req, res) => {
   res.send("Smart Job Hunter API");
