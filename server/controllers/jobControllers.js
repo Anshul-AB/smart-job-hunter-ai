@@ -2,29 +2,45 @@
 
 import mongoose from "mongoose";
 import Job from "../models/Job.js";
+import User from "../models/User.js";
 
-const createJob = async(req, res)=>{
-    try {
-        const{title, company , location, description, requiredSkills, applyLink} = req.body;
-       if(!title || !company || !location || !description || !requiredSkills || !applyLink){
-    return res.status(400).json({message: "Please provide all required fields"})
-}
 
-        const newJob = await Job.create({
-            title,
-            company,
-            location,
-            description,
-            requiredSkills,
-            applyLink,
-            createdBy: req.userId
-        })
-    return res.status(201).json({message: "Job created successfully", job:newJob})
-    } catch (error) {
-        console.error("Error creating job:", error);
-    return res.status(500).json({ message: "Internal server error" });
+const createJob = async (req, res) => {
+  try {
+    const { title, company, location, description, requiredSkills, applyLink } = req.body;
+
+    if (!title || !company || !location || !description || !requiredSkills || !applyLink) {
+      return res.status(400).json({ message: "Please provide all required fields" });
     }
-}
+
+    if (!Array.isArray(requiredSkills) || requiredSkills.length === 0) {
+      return res.status(400).json({ message: "requiredSkills must be a non-empty array" });
+    }
+
+    const cleanedSkills = requiredSkills.map(skill =>
+      skill.toLowerCase().trim()
+    );
+
+    const newJob = await Job.create({
+      title: title.trim(),
+      company: company.trim(),
+      location: location.trim(),
+      description: description.trim(),
+      requiredSkills: cleanedSkills,
+      applyLink: applyLink.trim(),
+      createdBy: req.userId
+    });
+
+    return res.status(201).json({
+      message: "Job created successfully",
+      job: newJob
+    });
+
+  } catch (error) {
+    console.error("Error creating job:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 const getJobs = async (req, res) => {
   try {
@@ -87,4 +103,53 @@ const deleteJob = async (req, res) => {
   }
 };
 
-export { createJob, getJobs, getJobById, deleteJob };
+const analyzeJob = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+
+    const job = await Job.findById(id);
+
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    const user = await User.findById(req.userId)
+    const userSkills = user.skills
+
+    if (!userSkills || userSkills.length === 0) {
+      return res.status(400).json({ message: "User skills required" });
+    }
+
+    // normalize to lowercase
+    const userSkillsLower = userSkills.map(skill => skill.toLowerCase());
+    // const reqSkillsLower = job.requiredSkills.map(skill => skill.toLowerCase());
+
+    const matchedSkills = job.requiredSkills.filter(skill =>
+      userSkillsLower.includes(skill.toLowerCase())
+    );
+
+    const missingSkills = job.requiredSkills.filter(skill =>
+      !userSkillsLower.includes(skill.toLowerCase())
+    );
+
+    const matchPercentage = Math.round(
+      (matchedSkills.length / job.requiredSkills.length) * 100
+    );
+    console.log("hello")
+
+    console.log("userskills", userSkills, "req", job.requiredSkills)
+
+    return res.status(200).json({
+      matchPercentage,
+      matchedSkills,
+      missingSkills
+    });
+
+  } catch (error) {
+    console.error("Error analyzing job:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export { createJob, getJobs, getJobById, deleteJob, analyzeJob };

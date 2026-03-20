@@ -22,11 +22,11 @@ const jobSchema = new mongoose.Schema({
     required: true
   },
 
-  requiredSkills: [
+  requiredSkills: 
     {
       type: String
     }
-  ],
+  ,
 
   applyLink: {
     type: String,
