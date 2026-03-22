@@ -1,26 +1,59 @@
-import React from "react";
+import React, { useState } from "react";
+import { makeUnauthenticatedPOSTRequest } from "../utils/serviceHelper";
+import { useNavigate } from "react-router-dom";
+
 
 const Signup = () => {
-  const [user, setUser] = {
+  const navigate = useNavigate();
+  const [user, setUser] = useState({
     name: "",
     email: "",
     password: "",
     skills: [],
-  };
+  });
 
-  const handleInput = (e) => {
-    const { name, value } = e.target;
+const handleInput = (e) => {
+  const { name, value } = e.target;
 
-    setFormData({
-      ...formData,
+  if (name === "skills") {
+    setUser({
+      ...user,
+      skills: value.split(",").map(s => s.trim().toLowerCase())
+    });
+  } else {
+    setUser({
+      ...user,
       [name]: value
     });
-  };
+  }
+};
 
-  const submit = (e) => {
-    e.preventDefault();
-    console.log(formData);
-  };
+const submit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const res = await makeUnauthenticatedPOSTRequest('/api/auth/signup', user);
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message || "Signup failed");
+      return;
+    }
+
+    localStorage.setItem("token", data.token);
+
+    alert("Signup successful 🎉");
+
+
+
+navigate("/jobs");
+
+  } catch (error) {
+    console.error("Signup error:", error);
+    alert("Something went wrong");
+  }
+};
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300">
@@ -29,20 +62,20 @@ const Signup = () => {
         <h2 className="text-3xl font-bold text-center mb-2 text-gray-800">
           Welcome Back 👋
         </h2>
-        <p className="text-center text-gray-500 mb-6">Login to your account</p>
+        <p className="text-center text-gray-500 mb-6">Create your account</p>
 
         {/* Form */}
         <form onSubmit={submit} className="space-y-5">
           {/* Name */}
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700">
-              Email
+              Name
             </label>
             <input
               type="text"
               name="name"
               placeholder="your name"
-              value={user.email}
+              value={user.name}
               onChange={handleInput}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             />
@@ -81,13 +114,13 @@ const Signup = () => {
           {/* Skills */}
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700">
-              Password
+              Skills
             </label>
             <input
               type="text"
               name="skills"
               placeholder="your skills"
-              value={user.skills}
+              value={user.skills.join(", ")}
               onChange={handleInput}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             />
@@ -104,9 +137,9 @@ const Signup = () => {
 
         {/* Footer */}
         <p className="text-sm text-center mt-6 text-gray-500">
-          Don’t have an account?{" "}
+          Already have an account?{" "}
           <span className="text-blue-600 font-medium cursor-pointer hover:underline">
-            Sign up
+            Login
           </span>
         </p>
       </div>

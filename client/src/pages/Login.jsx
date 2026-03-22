@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { makeAuthenticatedPOSTRequest } from "../utils/serviceHelper";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -15,9 +16,27 @@ const Login = () => {
     });
   };
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    console.log(formData);
+  
+    try {
+      const res = await makeAuthenticatedPOSTRequest('/api/auth/login', formData);
+  
+      const data = await res.json();
+  
+      if (!res.ok) {
+        alert(data.message || "Login failed");
+        return;
+      }
+  
+      // localStorage.setItem("token", data.token);
+  
+      alert("Login successful 🎉");
+  
+    } catch (error) {
+      console.error("Signup error:", error);
+      alert("Something went wrong");
+    }
   };
 
   return (
