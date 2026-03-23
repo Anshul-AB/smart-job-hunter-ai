@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { backendUrl } from "../utils/config";
+import { makeAuthenticatedPOSTRequest, makeUnauthenticatedGETRequest } from "../utils/serviceHelper";
 
 const Jobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -9,8 +9,7 @@ const Jobs = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const res = await fetch(`${backendUrl}/api/jobs1`);
-        const data = await res.json();
+        const data = await makeUnauthenticatedGETRequest('/api/jobs/');
         setJobs(data.jobs);
       } catch (error) {
         console.error("Error fetching jobs:", error);
@@ -23,20 +22,9 @@ const Jobs = () => {
   // analyze job
   const analyzeJob = async (jobId) => {
     try {
-      const token = localStorage.getItem("token");
+      const data = await makeAuthenticatedPOSTRequest(`/api/jobs/${jobId}/analyze`, )
+      // document.cookie = `token=${data.token}; path=/; max-age=86400`;
 
-      const res = await fetch(
-        `${backendUrl}/api/jobs/${jobId}/analyze`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          }
-        }
-      );
-
-      const data = await res.json();
       setResult(data);
 
     } catch (error) {

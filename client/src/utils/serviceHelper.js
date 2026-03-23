@@ -50,6 +50,54 @@ export const makeAuthenticatedPOSTRequest = async (route, body) => {
   }
 };
 
+// UNAUTHENTICATED GET REQUEST
+export const makeUnauthenticatedGETRequest = async (route) => {
+  const url = backendUrl + route;
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const formattedResponse = await response.json();
+    return formattedResponse;
+  } catch (error) {
+    console.error("Error submitting the form:", error);
+    throw error;
+  }
+};
+
+// AUTHENTICATED GET REQUEST
+export const makeAuthenticatedGETRequest = async (route) => {
+  const token = getToken();
+  const url = backendUrl + route;
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const formattedResponse = await response.json();
+    return formattedResponse;
+  } catch (error) {
+    console.error("Error submitting the form:", error);
+    throw error;
+  }
+};
+
 // get token
 export const getToken = () => {
   const tokenName = "token";

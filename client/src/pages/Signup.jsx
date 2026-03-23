@@ -32,22 +32,18 @@ const submit = async (e) => {
   e.preventDefault();
 
   try {
-    const res = await makeUnauthenticatedPOSTRequest('/api/auth/signup', user);
+    const data = await makeUnauthenticatedPOSTRequest('/api/auth/signup', user);
+    console.log(data)
 
-    const data = await res.json();
-
-    if (!res.ok) {
+    if (!data.ok) {
       alert(data.message || "Signup failed");
       return;
     }
 
-    localStorage.setItem("token", data.token);
+      document.cookie = `token=${data.token}; path=/; max-age=86400`;
 
     alert("Signup successful 🎉");
-
-
-
-navigate("/jobs");
+    navigate("/jobs");
 
   } catch (error) {
     console.error("Signup error:", error);

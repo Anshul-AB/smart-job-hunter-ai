@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { makeAuthenticatedPOSTRequest } from "../utils/serviceHelper";
+import { makeAuthenticatedPOSTRequest, makeUnauthenticatedPOSTRequest } from "../utils/serviceHelper";
+import { useNavigate } from "react-router-dom";
+import useLogout from "../components/hooks/useLogout";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const logout = useLogout();
+
   const [formData, setFormData] = useState({
     email: "",
-    password: ""
+    password: "",
   });
 
   const handleInput = (e) => {
@@ -12,27 +17,28 @@ const Login = () => {
 
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
   };
 
   const submit = async (e) => {
     e.preventDefault();
-  
+
     try {
-      const res = await makeAuthenticatedPOSTRequest('/api/auth/login', formData);
-  
-      const data = await res.json();
-  
-      if (!res.ok) {
+      const data = await makeUnauthenticatedPOSTRequest(
+        "/api/auth/login",
+        formData,
+      );
+      console.log(data);
+
+      if (!data.success) {
         alert(data.message || "Login failed");
         return;
       }
-  
-      // localStorage.setItem("token", data.token);
-  
+
+      document.cookie = `token=${data.token}; path=/; max-age=86400; SameSite=Strict`;
       alert("Login successful 🎉");
-  
+      navigate("/jobs", { replace: true });
     } catch (error) {
       console.error("Signup error:", error);
       alert("Something went wrong");
@@ -41,20 +47,15 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300">
-
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
-
         {/* Heading */}
         <h2 className="text-3xl font-bold text-center mb-2 text-gray-800">
           Welcome Back 👋
         </h2>
-        <p className="text-center text-gray-500 mb-6">
-          Login to your account
-        </p>
+        <p className="text-center text-gray-500 mb-6">Login to your account</p>
 
         {/* Form */}
         <form onSubmit={submit} className="space-y-5">
-
           {/* Email */}
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700">
@@ -92,8 +93,14 @@ const Login = () => {
           >
             Login
           </button>
-
         </form>
+        <button
+          type="button"
+          onClick={logout}
+          className="w-full bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition"
+        >
+          Logout
+        </button>
 
         {/* Footer */}
         <p className="text-sm text-center mt-6 text-gray-500">
@@ -102,9 +109,7 @@ const Login = () => {
             Sign up
           </span>
         </p>
-
       </div>
-
     </div>
   );
 };
