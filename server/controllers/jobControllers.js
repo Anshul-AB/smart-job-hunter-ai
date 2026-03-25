@@ -103,6 +103,39 @@ const deleteJob = async (req, res) => {
   }
 };
 
+const getExternalJobs = async (req, res) => {
+  try {
+    const query = req.query.query || "developer";
+
+    const url = `https://jsearch.p.rapidapi.com/search?query=${query}&page=1&num_pages=1&country=us`;
+
+    const options = {
+      method: "GET",
+      headers: {
+        "x-rapidapi-key": process.env.RAPID_API_KEY,
+        "x-rapidapi-host": "jsearch.p.rapidapi.com"
+      }
+    };
+
+    const response = await fetch(url, options);
+    const data = await response.json();
+    const jobs = data.data.map(job => ({
+  title: job.job_title,
+  company: job.employer_name,
+  location: job.job_city,
+  description: job.job_description,
+  applyLink: job.job_apply_link
+}));
+
+    return res.status(200).json(jobs);
+
+  } catch (error) {
+    console.error("Error fetching external jobs:", error);
+    return res.status(500).json({ message: "Failed to fetch jobs" });
+  }
+};
+
+
 const analyzeJob = async (req, res) => {
   try {
 
@@ -152,4 +185,5 @@ const analyzeJob = async (req, res) => {
   }
 };
 
-export { createJob, getJobs, getJobById, deleteJob, analyzeJob };
+
+export { createJob, getJobs, getJobById, deleteJob, analyzeJob, getExternalJobs };
