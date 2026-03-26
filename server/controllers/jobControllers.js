@@ -107,7 +107,7 @@ const getExternalJobs = async (req, res) => {
   try {
     const query = req.query.query || "developer";
 
-    const url = `https://jsearch.p.rapidapi.com/search?query=${query}&page=1&num_pages=1&country=us`;
+    const url = `https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(query)}&page=1&num_pages=1&country=in`;
 
     const options = {
       method: "GET",
@@ -118,14 +118,22 @@ const getExternalJobs = async (req, res) => {
     };
 
     const response = await fetch(url, options);
+
     const data = await response.json();
+
+    // 🛑 safety check
+    if (!data.data) {
+      console.log("API ERROR:", data);
+      return res.status(400).json({ message: "Invalid API response" });
+    }
+
     const jobs = data.data.map(job => ({
-  title: job.job_title,
-  company: job.employer_name,
-  location: job.job_city,
-  description: job.job_description,
-  applyLink: job.job_apply_link
-}));
+      title: job.job_title,
+      company: job.employer_name,
+      location: job.job_city,
+      description: job.job_description,
+      applyLink: job.job_apply_link
+    }));
 
     return res.status(200).json(jobs);
 
