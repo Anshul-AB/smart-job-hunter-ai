@@ -5,19 +5,18 @@ import Signup from "./pages/Signup";
 import Jobs from "./pages/Jobs";
 import PrivateRoute from "./components/privateRoute/PrivateRoute";
 import ExternalJobs from "./pages/ExternalJobs";
+import Navbar from "./components/Navbar";
 
 const App = () => {
   return (
     <>
       <Router>
+        <Navbar />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/jobs" element={<Jobs />} />
           <Route path="/external-jobs" element={<ExternalJobs />} />
-          {/* <Route element={<PrivateRoute />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-        </Route> */}
+            <Route path="/jobs" element={<Jobs />} />
         </Routes>
       </Router>
     </>
