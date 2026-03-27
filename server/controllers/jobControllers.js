@@ -106,36 +106,41 @@ const deleteJob = async (req, res) => {
 const getExternalJobs = async (req, res) => {
   try {
     const query = req.query.query || "developer";
+    const page = parseInt(req.query.page) || 1;
 
-    const url = `https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(query)}&page=1&num_pages=1&country=in`;
+    const url = `https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(
+      query
+    )}&page=${page}&num_pages=1&country=in`;
 
     const options = {
       method: "GET",
       headers: {
         "x-rapidapi-key": process.env.RAPID_API_KEY,
-        "x-rapidapi-host": "jsearch.p.rapidapi.com"
-      }
+        "x-rapidapi-host": "jsearch.p.rapidapi.com",
+      },
     };
 
     const response = await fetch(url, options);
-
     const data = await response.json();
 
-    // 🛑 safety check
     if (!data.data) {
       console.log("API ERROR:", data);
       return res.status(400).json({ message: "Invalid API response" });
     }
 
-    const jobs = data.data.map(job => ({
+    const jobs = data.data.map((job) => ({
       title: job.job_title,
       company: job.employer_name,
       location: job.job_city,
       description: job.job_description,
-      applyLink: job.job_apply_link
+      applyLink: job.job_apply_link,
     }));
 
-    return res.status(200).json(jobs);
+    return res.status(200).json({
+      jobs,
+      page,
+      hasMore: jobs.length > 0, // 🔥 key for infinite scroll
+    });
 
   } catch (error) {
     console.error("Error fetching external jobs:", error);

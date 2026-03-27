@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post("/", authMiddleware, createJob);
 router.get("/", getJobs);
-router.get("/external", authMiddleware, getExternalJobs);
+router.get("/external", getExternalJobs);
 router.get("/:id", getJobById);
 router.delete("/:id", authMiddleware, deleteJob);
 router.post("/:id/analyze", authMiddleware, analyzeJob)
