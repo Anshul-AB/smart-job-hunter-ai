@@ -21,7 +21,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", authMiddleware, getProfileRoute);
 app.use("/api/jobs", jobRoutes);
 
-app.get("*", (req, res) => {
+app.get("/", (req, res) => {
   res.send("Smart Job Hunter API");
 });
 
