@@ -43,6 +43,7 @@ const createJob = async (req, res) => {
 };
 
 const getJobs = async (req, res) => {
+  console.log("Jobs route hit");
   try {
 
     const jobs = await Job.find().sort({ createdAt: -1 });
