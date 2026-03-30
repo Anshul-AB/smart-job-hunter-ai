@@ -1,5 +1,3 @@
-// create job 
-
 import mongoose from "mongoose";
 import Job from "../models/Job.js";
 import User from "../models/User.js";
@@ -47,12 +45,10 @@ const getJobs = async (req, res) => {
   try {
 
     const jobs = await Job.find().sort({ createdAt: -1 });
-
     return res.status(200).json({
       count: jobs.length,
       jobs
     });
-
   } catch (error) {
     console.error("Error fetching jobs:", error);
     return res.status(500).json({ message: "Internal server error" });
