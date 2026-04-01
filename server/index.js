@@ -11,10 +11,14 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({
-  origin: "https://smart-job-hunter-ai.vercel.app"
-}));
+const allowedOrigin =
+  process.env.NODE_ENV === "production"
+    ? "https://smart-job-hunter-ai.vercel.app"
+    : "http://localhost:5173";
+
+app.use(cors({ origin: allowedOrigin, credentials: true }));
 app.use(express.json());
+
 
 // ROUTES MIDDLEWARE
 app.use("/api/auth", authRoutes);

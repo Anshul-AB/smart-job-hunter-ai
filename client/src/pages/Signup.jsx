@@ -43,7 +43,7 @@ const submit = async (e) => {
       document.cookie = `token=${data.token}; path=/; max-age=86400`;
 
     alert("Signup successful 🎉");
-    navigate("/jobs");
+    navigate("/dashboard");
 
   } catch (error) {
     console.error("Signup error:", error);

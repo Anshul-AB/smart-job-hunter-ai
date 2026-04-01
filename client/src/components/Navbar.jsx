@@ -1,12 +1,17 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    setToken(localStorage.getItem("token"));
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    setToken(null); // 🔥 force re-render
     navigate("/login");
   };
 
@@ -21,8 +26,9 @@ const Navbar = () => {
 
         {token && (
           <>
-            <Link to="/jobs" className="hover:text-blue-600">My Jobs</Link>
-            <Link to="/external-jobs" className="hover:text-blue-600">Explore</Link>
+            <Link to="/jobs">My Jobs</Link>
+            <Link to="/external-jobs">Explore</Link>
+            <Link to="/dashboard">Dashboard</Link>
           </>
         )}
 
@@ -32,10 +38,7 @@ const Navbar = () => {
             <Link to="/signup">Signup</Link>
           </>
         ) : (
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 text-white px-3 py-1 rounded"
-          >
+          <button onClick={handleLogout}>
             Logout
           </button>
         )}

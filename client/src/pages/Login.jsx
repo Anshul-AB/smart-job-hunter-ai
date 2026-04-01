@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { makeAuthenticatedPOSTRequest, makeUnauthenticatedPOSTRequest } from "../utils/serviceHelper";
+import {  makeUnauthenticatedPOSTRequest } from "../utils/serviceHelper";
 import { useNavigate } from "react-router-dom";
 import useLogout from "../components/hooks/useLogout";
 
@@ -38,7 +38,7 @@ const Login = () => {
 
       document.cookie = `token=${data.token}; path=/; max-age=86400; SameSite=Strict`;
       alert("Login successful 🎉");
-      navigate("/jobs", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       console.error("Signup error:", error);
       alert("Something went wrong");

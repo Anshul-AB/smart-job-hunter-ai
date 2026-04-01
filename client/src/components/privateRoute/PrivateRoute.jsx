@@ -1,11 +1,9 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { getToken } from '../../utils/serviceHelper';
 
-const PrivateRoute = ({ element }) => {
+const PrivateRoute = () => {
     const token = getToken();
-
-    return !token ? <Navigate to="/login" replace /> : element;
+    return token ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 export default PrivateRoute;
