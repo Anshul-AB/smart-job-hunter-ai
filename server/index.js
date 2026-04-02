@@ -6,6 +6,7 @@ import authRoutes from "./routes/authRoutes.js";
 import authMiddleware from "./middleware/authMiddleware.js";
 import getProfileRoute from "./routes/getProfileRoutes.js";
 import jobRoutes from "./routes/jobRoutes.js"
+import uploadResumeRoute from "./routes/uploadResumeRoute.js"
 dotenv.config();
 
 const app = express();
@@ -24,6 +25,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/user", authMiddleware, getProfileRoute);
 app.use("/api/jobs", jobRoutes);
+app.use("/api/resume", uploadResumeRoute)
+app.use("/uploads", express.static("uploads") );
 
 app.get("/", (req, res) => {
   res.send("Smart Job Hunter API");

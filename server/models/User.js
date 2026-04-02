@@ -21,6 +21,21 @@ const userSchema = new mongoose.Schema(
     skills: {
       type: [String],
       default: []
+    },
+
+    resume: {
+      url: {
+        type: String,
+        default: ""
+      },
+      extractedText: {
+        type: String,
+        default: ""
+      },
+      extractedSkills: {
+        type: [String],
+        default: []
+      }
     }
   },
   { timestamps: true }
