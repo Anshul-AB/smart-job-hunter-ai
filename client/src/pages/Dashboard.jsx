@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import ResumeUpload from "../components/ResumeUpload";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -49,6 +50,9 @@ const Dashboard = () => {
         </div>
 
       </div>
+
+      {/* Resume upload */}
+      <ResumeUpload/>
 
     </div>
   );

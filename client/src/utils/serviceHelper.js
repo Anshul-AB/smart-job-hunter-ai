@@ -50,6 +50,33 @@ export const makeAuthenticatedPOSTRequest = async (route, body) => {
   }
 };
 
+// AUTHENTICATED FILE UPLOAD
+export const makeAuthenticatedFileRequest = async (route, formData) => {
+  const token = getToken();
+  const url = backendUrl + route;
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        // ❌ DO NOT set Content-Type here
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("File upload error:", error);
+    throw error;
+  }
+};
+
 // UNAUTHENTICATED GET REQUEST
 export const makeUnauthenticatedGETRequest = async (route) => {
   const url = backendUrl + route;

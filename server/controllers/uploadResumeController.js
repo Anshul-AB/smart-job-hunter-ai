@@ -1,30 +1,21 @@
-import  User  from "../models/User.js";
+import fs from "fs";
+import * as pdfParse from "pdf-parse";
 
-// Route
-const uploadResume =  async (req, res) => {
- try {
-    const userId = req.userId;
+const pdf = pdfParse.default;
 
-    const user = await User.findById(userId);
-
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-
+// const data = await pdf(dataBuffer);
+export const uploadResume = async (req, res) => {
+  try {
     const filePath = req.file.path;
+    const dataBuffer = fs.readFileSync(filePath);
 
-    user.resume.url = filePath;
+    // console.log("PDF VALUE:", pdf);
+    // const data = await pdf(dataBuffer); // ✅ works
 
-    await user.save();
-
-    res.json({
-      message: "Resume uploaded & saved",
-      resume: user.resume
-    });
+    res.json({ text: data.text });
 
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
-
-export {uploadResume}
