@@ -1,18 +1,39 @@
 import fs from "fs";
-import * as pdfParse from "pdf-parse";
+import { createRequire } from "module";
+import { extractSkills } from "../utils/extractSkills.js";
+import User from "../models/User.js";
 
-const pdf = pdfParse.default;
+const require = createRequire(import.meta.url);
+const pdf = require("pdf-parse");
 
-// const data = await pdf(dataBuffer);
 export const uploadResume = async (req, res) => {
   try {
+    const userId = req.userId; // make sure auth middleware sets this
+
     const filePath = req.file.path;
     const dataBuffer = fs.readFileSync(filePath);
 
-    // console.log("PDF VALUE:", pdf);
-    // const data = await pdf(dataBuffer); // ✅ works
+    const data = await pdf(dataBuffer);
+    const text = data.text;
 
-    res.json({ text: data.text });
+    // 🔥 Extract skills
+    const skills = extractSkills(text);
+
+    // 🔥 SAVE TO DB
+    const user = await User.findById(userId);
+
+    user.resume = {
+      url: filePath,
+      extractedText: text,
+      extractedSkills: skills,
+    };
+
+    await user.save();
+
+    res.json({
+      message: "Resume uploaded & saved",
+      resume: user.resume,
+    });
 
   } catch (err) {
     console.error(err);

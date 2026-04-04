@@ -145,55 +145,53 @@ const getExternalJobs = async (req, res) => {
   }
 };
 
-
-const analyzeJob = async (req, res) => {
+const analyzeJobs = async (req, res) => {
   try {
+    const user = await User.findById(req.userId);
 
-    const { id } = req.params;
+    const userSkills = user.resume?.extractedSkills || [];
 
-    const job = await Job.findById(id);
-
-    if (!job) {
-      return res.status(404).json({ message: "Job not found" });
+    if (!userSkills.length) {
+      return res.status(400).json({ message: "No resume uploaded or no skills found" });
     }
 
-    const user = await User.findById(req.userId)
-    const userSkills = user.skills
-
-    if (!userSkills || userSkills.length === 0) {
-      return res.status(400).json({ message: "User skills required" });
-    }
-
-    // normalize to lowercase
     const userSkillsLower = userSkills.map(skill => skill.toLowerCase());
-    // const reqSkillsLower = job.requiredSkills.map(skill => skill.toLowerCase());
 
-    const matchedSkills = job.requiredSkills.filter(skill =>
-      userSkillsLower.includes(skill.toLowerCase())
-    );
+    const jobs = await Job.find();
 
-    const missingSkills = job.requiredSkills.filter(skill =>
-      !userSkillsLower.includes(skill.toLowerCase())
-    );
+    const results = jobs.map((job) => {
+      const matchedSkills = job.requiredSkills.filter(skill =>
+        userSkillsLower.includes(skill.toLowerCase())
+      );
 
-    const matchPercentage = Math.round(
-      (matchedSkills.length / job.requiredSkills.length) * 100
-    );
-    console.log("hello")
+      const missingSkills = job.requiredSkills.filter(skill =>
+        !userSkillsLower.includes(skill.toLowerCase())
+      );
 
-    console.log("userskills", userSkills, "req", job.requiredSkills)
+      const matchPercentage = Math.round(
+        (matchedSkills.length / job.requiredSkills.length) * 100
+      );
 
-    return res.status(200).json({
-      matchPercentage,
-      matchedSkills,
-      missingSkills
+      return {
+        jobId: job._id,
+        title: job.title,
+        company: job.company,
+        matchPercentage,
+        matchedSkills,
+        missingSkills,
+      };
     });
 
+    // 🔥 sort best matches first
+    results.sort((a, b) => b.matchPercentage - a.matchPercentage);
+
+    return res.status(200).json(results);
+
   } catch (error) {
-    console.error("Error analyzing job:", error);
+    console.error("Error analyzing jobs:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
 
 
-export { createJob, getJobs, getJobById, deleteJob, analyzeJob, getExternalJobs };
+export { createJob, getJobs, getJobById, deleteJob, analyzeJobs, getExternalJobs };
