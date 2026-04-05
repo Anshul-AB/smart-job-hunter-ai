@@ -149,7 +149,9 @@ const analyzeJobs = async (req, res) => {
   try {
     const user = await User.findById(req.userId);
 
+    console.log("USER DATA:", user);
     const userSkills = user.resume?.extractedSkills || [];
+    console.log(userSkills)
 
     if (!userSkills.length) {
       return res.status(400).json({ message: "No resume uploaded or no skills found" });
