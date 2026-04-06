@@ -21,6 +21,7 @@ export const uploadResume = async (req, res) => {
 
     // 🔥 SAVE TO DB
     const user = await User.findById(userId);
+    // console.log(user)
 
     user.resume = {
       url: filePath,
