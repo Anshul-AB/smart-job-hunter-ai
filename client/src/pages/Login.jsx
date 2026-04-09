@@ -2,10 +2,14 @@ import React, { useState } from "react";
 import {  makeUnauthenticatedPOSTRequest } from "../utils/serviceHelper";
 import { useNavigate } from "react-router-dom";
 import useLogout from "../components/hooks/useLogout";
+import { useDispatch } from "react-redux";
+import { login } from "../redux/slices/authSlice";
+import { getToken } from "../utils/serviceHelper";
 
 const Login = () => {
   const navigate = useNavigate();
   const logout = useLogout();
+  const dispatch = useDispatch();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -21,29 +25,35 @@ const Login = () => {
     });
   };
 
-  const submit = async (e) => {
-    e.preventDefault();
+const submit = async (e) => {
+  e.preventDefault();
 
-    try {
-      const data = await makeUnauthenticatedPOSTRequest(
-        "/api/auth/login",
-        formData,
-      );
-      console.log(data);
+  try {
+    const data = await makeUnauthenticatedPOSTRequest(
+      "/api/auth/login",
+      formData
+    );
 
-      if (!data.success) {
-        alert(data.message || "Login failed");
-        return;
-      }
-
-      document.cookie = `token=${data.token}; path=/; max-age=86400; SameSite=Strict`;
-      alert("Login successful 🎉");
-      navigate("/dashboard", { replace: true });
-    } catch (error) {
-      console.error("Signup error:", error);
-      alert("Something went wrong");
+    if (!data.success) {
+      alert(data.message || "Login failed");
+      return;
     }
-  };
+
+    // ✅ set cookie
+    document.cookie = `token=${data.token}; path=/; max-age=86400; SameSite=Strict`;
+
+    // ✅ UPDATE REDUX (THIS FIXES YOUR NAVBAR)
+    dispatch(login(getToken()));
+
+    alert("Login successful 🎉");
+
+    navigate("/dashboard", { replace: true });
+
+  } catch (error) {
+    console.error("Signup error:", error);
+    alert("Something went wrong");
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300">

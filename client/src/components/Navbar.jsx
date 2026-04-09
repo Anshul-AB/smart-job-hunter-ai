@@ -1,49 +1,31 @@
-import React, { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../redux/slices/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
+  const token = useSelector((state) => state.auth.token);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [token, setToken] = useState(null);
-
-  useEffect(() => {
-    setToken(localStorage.getItem("token"));
-  }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    setToken(null); // 🔥 force re-render
+    dispatch(logout());
     navigate("/login");
   };
 
   return (
-    <div className="bg-white shadow-md px-6 py-3 flex justify-between items-center">
-
-      <h1 className="text-xl font-bold text-blue-600 cursor-pointer">
-        JobLens 🚀
-      </h1>
-
-      <div className="flex gap-4 items-center">
-
-        {token && (
-          <>
-            <Link to="/jobs">My Jobs</Link>
-            <Link to="/external-jobs">Explore</Link>
-            <Link to="/dashboard">Dashboard</Link>
-          </>
-        )}
-
-        {!token ? (
-          <>
-            <Link to="/login">Login</Link>
-            <Link to="/signup">Signup</Link>
-          </>
-        ) : (
-          <button onClick={handleLogout}>
-            Logout
-          </button>
-        )}
-
-      </div>
+    <div className="flex gap-4">
+      {token ? (
+        <>
+          <Link to="/jobs">My Jobs</Link>
+          <Link to="/dashboard">Dashboard</Link>
+          <button onClick={handleLogout}>Logout</button>
+        </>
+      ) : (
+        <>
+          <Link to="/login">Login</Link>
+          <Link to="/signup">Signup</Link>
+        </>
+      )}
     </div>
   );
 };

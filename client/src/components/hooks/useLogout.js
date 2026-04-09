@@ -1,12 +1,21 @@
+// src/hooks/useLogout.js
+import { useDispatch } from "react-redux";
+import { logout } from "../../redux/slices/authSlice.js";
 import { useNavigate } from "react-router-dom";
 
 const useLogout = () => {
-    const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-    return () => {
-        document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-        navigate("/login");
-    };
+  const handleLogout = () => {
+    document.cookie = "token=; Max-Age=0; path=/";
+
+    dispatch(logout());
+
+    navigate("/login", { replace: true });
+  };
+
+  return handleLogout;
 };
 
-export default useLogout
+export default useLogout;

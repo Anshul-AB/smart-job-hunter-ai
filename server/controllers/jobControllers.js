@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Job from "../models/Job.js";
 import User from "../models/User.js";
+import { extractSkills } from "../utils/extractSkills.js";
 
 
 const createJob = async (req, res) => {
@@ -130,7 +131,7 @@ const getExternalJobs = async (req, res) => {
       title: job.job_title,
       company: job.employer_name,
       location: job.job_city,
-      description: job.job_description,
+      description: job.job_description || "",
       applyLink: job.job_apply_link,
     }));
 
@@ -148,7 +149,14 @@ const getExternalJobs = async (req, res) => {
 
 const analyzeJob = async (req, res) => {
   try {
+    console.log("REQ BODY:", req.body);
+
     const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     const userSkills = user.resume?.extractedSkills || [];
 
     if (!userSkills.length) {
@@ -159,7 +167,15 @@ const analyzeJob = async (req, res) => {
 
     const { title, company, description } = req.body;
 
+    if (!description) {
+      return res.status(400).json({
+        message: "Job description is missing",
+      });
+    }
+
     const jobSkills = extractSkills(description);
+
+    console.log("JOB SKILLS:", jobSkills);
 
     const userSkillsLower = userSkills.map(s => s.toLowerCase());
 
@@ -184,8 +200,8 @@ const analyzeJob = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error analyzing job" });
+    console.error("FULL ERROR:", err);
+    res.status(500).json({ message: err.message });
   }
 };
 

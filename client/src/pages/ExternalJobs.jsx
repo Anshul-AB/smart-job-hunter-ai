@@ -47,7 +47,7 @@ const ExternalJobs = () => {
 
       const data = await makeAuthenticatedPOSTRequest(
         `/api/jobs/analyze`,
-        job, // 🔥 send whole job
+        job,
       );
 
       setResult(data);
