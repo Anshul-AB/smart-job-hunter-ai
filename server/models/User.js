@@ -36,7 +36,24 @@ const userSchema = new mongoose.Schema(
         type: [String],
         default: []
       }
+    },
+    savedJobs: [
+  {
+    jobId: {
+      type: String,
+      required: true
+    },
+    title: String,
+    company: String,
+    location: String,
+    description: String,
+    applyLink: String,
+    savedAt: {
+      type: Date,
+      default: Date.now
     }
+  }
+]
   },
   { timestamps: true }
 );

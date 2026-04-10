@@ -7,6 +7,7 @@ import PrivateRoute from "./components/privateRoute/PrivateRoute";
 import ExternalJobs from "./pages/ExternalJobs";
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
+import Home from "./pages/homepage";
 
 const App = () => {
   return (
@@ -14,6 +15,7 @@ const App = () => {
       <Router>
         <Navbar />
         <Routes>
+          <Route path="/" element={<Home/>}/>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/external-jobs" element={<ExternalJobs />} />

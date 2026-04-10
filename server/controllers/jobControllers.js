@@ -205,5 +205,39 @@ const analyzeJob = async (req, res) => {
   }
 };
 
+export const saveJob = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+
+    const job = req.body;
+
+    // 🔥 Prevent duplicates
+    const alreadySaved = user.savedJobs.some(
+      (j) => j.jobId === job.id
+    );
+
+    if (alreadySaved) {
+      return res.status(400).json({ message: "Job already saved" });
+    }
+
+    user.savedJobs.push({
+      jobId: job.id,
+      title: job.title,
+      company: job.company,
+      location: job.location,
+      description: job.description,
+      applyLink: job.applyLink,
+    });
+
+    await user.save();
+
+    res.json({ message: "Job saved successfully ❤️" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error saving job" });
+  }
+};
+
 
 export { createJob, getJobs, getJobById, deleteJob, analyzeJob, getExternalJobs };
