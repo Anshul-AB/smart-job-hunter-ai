@@ -7,7 +7,7 @@ import PrivateRoute from "./components/privateRoute/PrivateRoute";
 import ExternalJobs from "./pages/ExternalJobs";
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
-import Home from "./pages/homepage";
+import Home from "./pages/Home";
 import SavedJobs from "./pages/SavedJobs";
 
 const App = () => {
