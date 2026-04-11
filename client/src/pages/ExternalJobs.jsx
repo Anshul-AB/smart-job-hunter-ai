@@ -5,6 +5,7 @@ import {
 } from "../utils/serviceHelper";
 import LoadingState from "../components/LoadingState";
 import { Bookmark, BookmarkCheck } from "lucide-react";
+import { useSavedJobs } from "../components/hooks/useSavedJobs";
 
 const ExternalJobs = () => {
   const [jobs, setJobs] = useState([]);
@@ -14,9 +15,12 @@ const ExternalJobs = () => {
   const [result, setResult] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [selectedJobIndex, setSelectedJobIndex] = useState(null);
-  const [savedJobs, setSavedJobs] = useState([]);
 
-  // 🔹 Fetch Jobs
+  const [savingId, setSavingId] = useState(null); // 🔥 prevent spam click
+
+  const { savedJobs, toggleSaveJob } = useSavedJobs();
+
+  // 🔹 Fetch jobs
   const fetchJobs = async () => {
     if (loading || !hasMore) return;
 
@@ -58,25 +62,15 @@ const ExternalJobs = () => {
     }
   };
 
-  // 🔹 Save Job
-  const saveJob = async (job) => {
+  // 🔹 Handle bookmark click safely
+  const handleToggleSave = async (job) => {
     try {
-      await makeAuthenticatedPOSTRequest("/api/jobs/save", job);
-
-      setSavedJobs((prev) =>
-        prev.includes(job.id) ? prev : [...prev, job.id]
-      );
+      setSavingId(job.id);
+      await toggleSaveJob(job);
     } catch (err) {
       console.error(err);
-    }
-  };
-
-  // 🔹 Toggle Save
-  const toggleSaveJob = async (job) => {
-    if (savedJobs.includes(job.id)) {
-      setSavedJobs((prev) => prev.filter((id) => id !== job.id));
-    } else {
-      await saveJob(job);
+    } finally {
+      setSavingId(null);
     }
   };
 
@@ -112,13 +106,14 @@ const ExternalJobs = () => {
       <div className="grid md:grid-cols-2 gap-6">
         {jobs.map((job, i) => (
           <div
-            key={job.id || i}
+            key={job.id}
             className="relative bg-white/5 border border-white/10 backdrop-blur-lg p-6 rounded-2xl hover:scale-[1.02] transition"
           >
-            {/* BOOKMARK */}
+            {/* 🔖 Bookmark */}
             <button
-              onClick={() => toggleSaveJob(job)}
-              className="absolute top-4 right-4 text-gray-300 hover:text-blue-500 transition"
+              disabled={savingId === job.id}
+              onClick={() => handleToggleSave(job)}
+              className="absolute top-4 right-4 text-gray-300 hover:text-blue-500 transition-transform hover:scale-110 disabled:opacity-50"
             >
               {savedJobs.includes(job.id) ? (
                 <BookmarkCheck className="w-5 h-5 text-blue-500" />
@@ -181,7 +176,7 @@ const ExternalJobs = () => {
                       />
                     </div>
 
-                    {/* MATCHED SKILLS */}
+                    {/* MATCHED */}
                     <div className="mt-3">
                       <p className="text-sm font-semibold text-green-400">
                         Matched Skills
@@ -198,7 +193,7 @@ const ExternalJobs = () => {
                       </div>
                     </div>
 
-                    {/* MISSING SKILLS */}
+                    {/* MISSING */}
                     <div className="mt-3">
                       <p className="text-sm font-semibold text-red-400">
                         Missing Skills

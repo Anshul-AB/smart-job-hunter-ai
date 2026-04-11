@@ -8,6 +8,7 @@ import ExternalJobs from "./pages/ExternalJobs";
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
 import Home from "./pages/homepage";
+import SavedJobs from "./pages/SavedJobs";
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
           <Route path="/signup" element={<Signup />} />
           <Route path="/external-jobs" element={<ExternalJobs />} />
           <Route path="/jobs" element={<Jobs />} />
+          <Route path="/saved-jobs" element={<SavedJobs />} />
           <Route element={<PrivateRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
           </Route>

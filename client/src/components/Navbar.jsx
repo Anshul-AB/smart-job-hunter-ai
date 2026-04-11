@@ -14,28 +14,32 @@ const Navbar = () => {
 
   return (
     <nav className="bg-gray-900 text-white shadow-md px-6 py-4 flex justify-between items-center">
-      
       {/* Logo */}
-      <h1 className="text-xl font-bold text-blue-400">
-        Smart Job AI
-      </h1>
+      <h1 className="text-xl font-bold text-blue-400">Smart Job AI</h1>
 
       {/* Links */}
       <div className="flex items-center gap-6">
         {token ? (
           <>
-            <Link
+            {/* <Link
               to="/jobs"
               className="hover:text-blue-400 transition duration-200"
             >
               My Jobs
-            </Link>
+            </Link> */}
 
             <Link
               to="/dashboard"
               className="hover:text-blue-400 transition duration-200"
             >
               Dashboard
+            </Link>
+              
+            <Link
+              to="/saved-jobs"
+              className=" text-pink-500 px-4 py-2 rounded"
+            >
+              Saved Jobs ❤️
             </Link>
 
             <button

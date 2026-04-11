@@ -3,7 +3,6 @@ import Job from "../models/Job.js";
 import User from "../models/User.js";
 import { extractSkills } from "../utils/extractSkills.js";
 
-
 const createJob = async (req, res) => {
   try {
     const { title, company, location, description, requiredSkills, applyLink } = req.body;
@@ -79,7 +78,6 @@ const getJobById = async (req, res) => {
   }
 };
 
-
 const deleteJob = async (req, res) => {
   try {
 
@@ -149,7 +147,7 @@ const getExternalJobs = async (req, res) => {
 
 const analyzeJob = async (req, res) => {
   try {
-    console.log("REQ BODY:", req.body);
+    // console.log("REQ BODY:", req.body);
 
     const user = await User.findById(req.userId);
 
@@ -175,7 +173,7 @@ const analyzeJob = async (req, res) => {
 
     const jobSkills = extractSkills(description);
 
-    console.log("JOB SKILLS:", jobSkills);
+    // console.log("JOB SKILLS:", jobSkills);
 
     const userSkillsLower = userSkills.map(s => s.toLowerCase());
 
@@ -205,7 +203,7 @@ const analyzeJob = async (req, res) => {
   }
 };
 
-export const saveJob = async (req, res) => {
+const saveJob = async (req, res) => {
   try {
     const user = await User.findById(req.userId);
 
@@ -239,5 +237,39 @@ export const saveJob = async (req, res) => {
   }
 };
 
+const getSavedJobs = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
 
-export { createJob, getJobs, getJobById, deleteJob, analyzeJob, getExternalJobs };
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json(user.savedJobs || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching saved jobs" });
+  }
+};
+
+const unsaveJob = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+
+    const { jobId } = req.params;
+
+    user.savedJobs = user.savedJobs.filter(
+      (job) => job.jobId !== jobId
+    );
+
+    await user.save();
+
+    res.json({ message: "Job removed" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error removing job" });
+  }
+};
+
+export { createJob, getJobs, getJobById, deleteJob, analyzeJob, getExternalJobs, saveJob, getSavedJobs, unsaveJob };
