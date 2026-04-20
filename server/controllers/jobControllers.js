@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import Job from "../models/Job.js";
 import User from "../models/User.js";
 import { extractSkills } from "../utils/extractSkills.js";
+import { cosineSimilarity, generateAIInsight, getEmbedding } from "../ai/functions.js";
+import { fetchArbeitJobs, fetchRapidJobs } from "../utils/externalJobsApi.js";
 
 const createJob = async (req, res) => {
   try {
@@ -99,107 +101,179 @@ const deleteJob = async (req, res) => {
   }
 };
 
+// const getExternalJobs = async (req, res) => {
+//   try {
+//     const query = req.query.query || "developer";
+//     const page = parseInt(req.query.page) || 1;
+
+//     const url = `https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(
+//       query
+//     )}&page=${page}&num_pages=1&country=in`;
+
+//     const options = {
+//       method: "GET",
+//       headers: {
+//         "x-rapidapi-key": process.env.RAPID_API_KEY,
+//         "x-rapidapi-host": "jsearch.p.rapidapi.com",
+//       },
+//     };
+
+//     const response = await fetch(url, options);
+//     const data = await response.json();
+
+//     if (!data.data) {
+//       console.log("API ERROR:", data);
+//       return res.status(400).json({ message: "Invalid API response" });
+//     }
+
+//     const jobs = data.data.map((job) => ({
+//       id: job.job_id,
+//       title: job.job_title,
+//       company: job.employer_name,
+//       location: job.job_city,
+//       description: job.job_description || "",
+//       applyLink: job.job_apply_link,
+//     }));
+
+//     return res.status(200).json({
+//       jobs,
+//       page,
+//       hasMore: jobs.length > 0, // 🔥 key for infinite scroll
+//     });
+
+//   } catch (error) {
+//     console.error("Error fetching external jobs:", error);
+//     return res.status(500).json({ message: "Failed to fetch jobs" });
+//   }
+// };
+
+// const analyzeJob = async (req, res) => {
+//   try {
+//     // console.log("REQ BODY:", req.body);
+
+//     const user = await User.findById(req.userId);
+
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     const userSkills = user.resume?.extractedSkills || [];
+
+//     if (!userSkills.length) {
+//       return res.status(400).json({
+//         message: "No resume uploaded or no skills found",
+//       });
+//     }
+
+//     const { title, company, description } = req.body;
+
+//     if (!description) {
+//       return res.status(400).json({
+//         message: "Job description is missing",
+//       });
+//     }
+
+//     const jobSkills = extractSkills(description);
+
+//     // console.log("JOB SKILLS:", jobSkills);
+
+//     const userSkillsLower = userSkills.map(s => s.toLowerCase());
+
+//     const matchedSkills = jobSkills.filter(skill =>
+//       userSkillsLower.includes(skill.toLowerCase())
+//     );
+
+//     const missingSkills = jobSkills.filter(skill =>
+//       !userSkillsLower.includes(skill.toLowerCase())
+//     );
+
+//     const matchPercentage = jobSkills.length
+//       ? Math.round((matchedSkills.length / jobSkills.length) * 100)
+//       : 0;
+
+//     return res.json({
+//       title,
+//       company,
+//       matchPercentage,
+//       matchedSkills,
+//       missingSkills,
+//     });
+
+//   } catch (err) {
+//     console.error("FULL ERROR:", err);
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
 const getExternalJobs = async (req, res) => {
   try {
     const query = req.query.query || "developer";
     const page = parseInt(req.query.page) || 1;
 
-    const url = `https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(
-      query
-    )}&page=${page}&num_pages=1&country=in`;
+    let jobs = [];
 
-    const options = {
-      method: "GET",
-      headers: {
-        "x-rapidapi-key": process.env.RAPID_API_KEY,
-        "x-rapidapi-host": "jsearch.p.rapidapi.com",
-      },
-    };
+    try {
+      // 🥇 Try RapidAPI first
+      jobs = await fetchRapidJobs(query, page);
 
-    const response = await fetch(url, options);
-    const data = await response.json();
+      console.log("✅ Using RapidAPI");
 
-    if (!data.data) {
-      console.log("API ERROR:", data);
-      return res.status(400).json({ message: "Invalid API response" });
+    } catch (rapidError) {
+      console.warn("⚠️ RapidAPI failed, switching to Arbeitnow");
+
+      // 🥈 Fallback
+      jobs = await fetchArbeitJobs();
     }
-
-    const jobs = data.data.map((job) => ({
-      id: job.job_id,
-      title: job.job_title,
-      company: job.employer_name,
-      location: job.job_city,
-      description: job.job_description || "",
-      applyLink: job.job_apply_link,
-    }));
 
     return res.status(200).json({
       jobs,
-      page,
-      hasMore: jobs.length > 0, // 🔥 key for infinite scroll
+      hasMore: jobs.length > 0,
     });
 
   } catch (error) {
-    console.error("Error fetching external jobs:", error);
+    console.error("❌ Both APIs failed:", error);
     return res.status(500).json({ message: "Failed to fetch jobs" });
   }
 };
 
 const analyzeJob = async (req, res) => {
   try {
-    // console.log("REQ BODY:", req.body);
-
     const user = await User.findById(req.userId);
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const userSkills = user.resume?.extractedSkills || [];
-
-    if (!userSkills.length) {
-      return res.status(400).json({
-        message: "No resume uploaded or no skills found",
-      });
-    }
-
-    const { title, company, description } = req.body;
+    const userText = user.resume?.extractedText || "";
+    const { description, title, company } = req.body;
 
     if (!description) {
-      return res.status(400).json({
-        message: "Job description is missing",
-      });
+      return res.status(400).json({ message: "Job description missing" });
     }
 
-    const jobSkills = extractSkills(description);
+const userEmbedding = await getEmbedding(user.resume.extractedText);
+const jobEmbedding = await getEmbedding(description);
 
-    // console.log("JOB SKILLS:", jobSkills);
+const similarity = cosineSimilarity(userEmbedding, jobEmbedding);
 
-    const userSkillsLower = userSkills.map(s => s.toLowerCase());
+const matchPercentage = Math.round(((similarity + 1) / 2) * 100);
 
-    const matchedSkills = jobSkills.filter(skill =>
-      userSkillsLower.includes(skill.toLowerCase())
-    );
+const jobSkills = extractSkills(description);
+const userSkills = user.resume?.extractedSkills || [];
 
-    const missingSkills = jobSkills.filter(skill =>
-      !userSkillsLower.includes(skill.toLowerCase())
-    );
-
-    const matchPercentage = jobSkills.length
-      ? Math.round((matchedSkills.length / jobSkills.length) * 100)
-      : 0;
+const insight = await generateAIInsight(
+  userSkills,
+  jobSkills,
+  matchPercentage,
+);
 
     return res.json({
       title,
       company,
       matchPercentage,
-      matchedSkills,
-      missingSkills,
+        insight
+
     });
 
   } catch (err) {
-    console.error("FULL ERROR:", err);
-    res.status(500).json({ message: err.message });
+    console.error(err);
+    res.status(500).json({ message: "Error analyzing job" });
   }
 };
 

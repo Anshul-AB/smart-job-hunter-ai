@@ -28,7 +28,7 @@ const ExternalJobs = () => {
       setLoading(true);
 
       const data = await makeUnauthenticatedGETRequest(
-        `/api/jobs/external?query=react&page=${page}`
+        `/api/jobs/external?query=react&page=${page}`,
       );
 
       const newJobs = data.jobs || data;
@@ -49,10 +49,7 @@ const ExternalJobs = () => {
       setAnalyzing(true);
       setResult(null);
 
-      const data = await makeAuthenticatedPOSTRequest(
-        `/api/jobs/analyze`,
-        job
-      );
+      const data = await makeAuthenticatedPOSTRequest(`/api/jobs/analyze`, job);
 
       setResult(data);
     } catch (error) {
@@ -169,46 +166,62 @@ const ExternalJobs = () => {
                     {/* PROGRESS BAR */}
                     <div className="mt-2 w-full bg-gray-700 rounded-full h-2">
                       <div
-                        className="bg-blue-500 h-2 rounded-full"
+                        className="bg-blue-500 h-2 rounded-full transition-all duration-500"
                         style={{
                           width: `${result.matchPercentage}%`,
                         }}
                       />
                     </div>
 
-                    {/* MATCHED */}
-                    <div className="mt-3">
-                      <p className="text-sm font-semibold text-green-400">
-                        Matched Skills
-                      </p>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {result.matchedSkills?.map((skill, idx) => (
-                          <span
-                            key={idx}
-                            className="bg-green-500/20 text-green-400 px-2 py-1 rounded-full text-xs"
-                          >
-                            {skill}
-                          </span>
-                        ))}
+                    {/* 🧠 AI INSIGHT (NEW) */}
+                    {result.insight && (
+                      <div className="mt-4 bg-blue-500/10 border border-blue-500/30 p-3 rounded-lg">
+                        <p className="text-xs text-blue-400 font-semibold mb-1">
+                          🤖 AI Insight
+                        </p>
+                        <p className="text-sm text-gray-200 leading-relaxed">
+                          {result.insight}
+                        </p>
                       </div>
-                    </div>
+                    )}
+
+                    {/* MATCHED */}
+                    {result.matchedSkills?.length > 0 && (
+                      <div className="mt-4">
+                        <p className="text-sm font-semibold text-green-400">
+                          Matched Skills
+                        </p>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {result.matchedSkills.map((skill, idx) => (
+                            <span
+                              key={idx}
+                              className="bg-green-500/20 text-green-400 px-2 py-1 rounded-full text-xs"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* MISSING */}
-                    <div className="mt-3">
-                      <p className="text-sm font-semibold text-red-400">
-                        Missing Skills
-                      </p>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {result.missingSkills?.map((skill, idx) => (
-                          <span
-                            key={idx}
-                            className="bg-red-500/20 text-red-400 px-2 py-1 rounded-full text-xs"
-                          >
-                            {skill}
-                          </span>
-                        ))}
+                    {result.missingSkills?.length > 0 && (
+                      <div className="mt-3">
+                        <p className="text-sm font-semibold text-red-400">
+                          Missing Skills
+                        </p>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {result.missingSkills.map((skill, idx) => (
+                            <span
+                              key={idx}
+                              className="bg-red-500/20 text-red-400 px-2 py-1 rounded-full text-xs"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 )}
               </div>
