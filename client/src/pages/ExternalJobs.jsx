@@ -173,15 +173,21 @@ const ExternalJobs = () => {
                       />
                     </div>
 
-                    {/* 🧠 AI INSIGHT (NEW) */}
+                    {/* 🧠 AI INSIGHT SECTION */}
+                    {/* 🧠 AI INSIGHT SECTION */}
                     {result.insight && (
-                      <div className="mt-4 bg-blue-500/10 border border-blue-500/30 p-3 rounded-lg">
-                        <p className="text-xs text-blue-400 font-semibold mb-1">
-                          🤖 AI Insight
-                        </p>
-                        <p className="text-sm text-gray-200 leading-relaxed">
+                      <div className="mt-4 bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-blue-400">🤖</span>
+                          <h4 className="text-xs text-blue-400 font-bold uppercase tracking-widest">
+                            AI Analysis
+                          </h4>
+                        </div>
+
+                        {/* whitespace-pre-line allows the bullet points to appear on separate lines */}
+                        <div className="text-sm text-gray-200 leading-relaxed whitespace-pre-line space-y-1">
                           {result.insight}
-                        </p>
+                        </div>
                       </div>
                     )}
 

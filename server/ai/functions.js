@@ -46,34 +46,29 @@ export const cosineSimilarity = (a, b) => {
 };
 
 
-export const generateAIInsight = async (
-  userSkills,
-  jobSkills,
-  matchPercentage
-) => {
+export const generateAIInsight = async (userSkills, jobSkills, matchPercentage) => {
   try {
     const prompt = `
-You are a career assistant AI.
+      You are a career assistant AI. 
+      User skills: ${userSkills.join(", ")}
+      Job requires: ${jobSkills.join(", ")}
+      Match score: ${matchPercentage}%
 
-User skills: ${userSkills.join(", ")}
-Job requires: ${jobSkills.join(", ")}
+      Provide a 3-bullet point summary:
+      - Bullet 1: A brief "Verdict" on the match.
+      - Bullet 2: Specific "Missing Skills" based on the job requirements.
+      - Bullet 3: One "Action Step" to improve the odds.
 
-Match score: ${matchPercentage}%
-
-Explain:
-1. Why this job is a good or bad match
-2. What skills are missing
-3. What the user should improve
-
-Keep it short (2-3 lines), clear, and professional.
-`;
+      Keep each bullet under 15 words. Use the format:
+      • [Point 1]
+      • [Point 2]
+      • [Point 3]
+    `;
 
     const result = await model.generateContent(prompt);
-
     return result.response.text();
-
   } catch (err) {
-    console.error("Gemini FULL error:", err);
-    return err.message; // 🔥 show real issue
+    console.error("Gemini Insight Error:", err);
+    return "• Error generating insight. Please try again.";
   }
 };
