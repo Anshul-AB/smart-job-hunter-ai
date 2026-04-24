@@ -173,23 +173,60 @@ const ExternalJobs = () => {
                       />
                     </div>
 
-                    {/* 🧠 AI INSIGHT SECTION */}
-                    {/* 🧠 AI INSIGHT SECTION */}
-                    {result.insight && (
-                      <div className="mt-4 bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-blue-400">🤖</span>
-                          <h4 className="text-xs text-blue-400 font-bold uppercase tracking-widest">
-                            AI Analysis
-                          </h4>
-                        </div>
+                   {result.aiUsed ? (
+  /* 🧠 FULL AI UI */
+  <div className="mt-4 bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl">
+    <div className="flex items-center gap-2 mb-3">
+      <span className="text-blue-400">🤖</span>
+      <h4 className="text-xs text-blue-400 font-bold uppercase tracking-widest">
+        AI Analysis
+      </h4>
+    </div>
 
-                        {/* whitespace-pre-line allows the bullet points to appear on separate lines */}
-                        <div className="text-sm text-gray-200 leading-relaxed whitespace-pre-line space-y-1">
-                          {result.insight}
-                        </div>
-                      </div>
-                    )}
+    <div className="text-sm text-gray-200 whitespace-pre-line">
+      {result.insight}
+    </div>
+  </div>
+) : (
+  /* ⚡ FALLBACK UI (simple blocks) */
+  <div className="mt-4 grid grid-cols-2 gap-3">
+
+    {/* User Skills */}
+    <div className="bg-green-500/10 border border-green-500/30 p-3 rounded-lg">
+      <p className="text-xs text-green-400 font-semibold mb-2">
+        Your Skills
+      </p>
+      <div className="flex flex-wrap gap-1">
+        {result.userSkills.map((skill, i) => (
+          <span
+            key={i}
+            className="text-xs bg-green-500/20 px-2 py-1 rounded"
+          >
+            {skill}
+          </span>
+        ))}
+      </div>
+    </div>
+
+    {/* Missing Skills */}
+    <div className="bg-red-500/10 border border-red-500/30 p-3 rounded-lg">
+      <p className="text-xs text-red-400 font-semibold mb-2">
+        Missing Skills
+      </p>
+      <div className="flex flex-wrap gap-1">
+        {result.missingSkills.map((skill, i) => (
+          <span
+            key={i}
+            className="text-xs bg-red-500/20 px-2 py-1 rounded"
+          >
+            {skill}
+          </span>
+        ))}
+      </div>
+    </div>
+
+  </div>
+)}
 
                     {/* MATCHED */}
                     {result.matchedSkills?.length > 0 && (

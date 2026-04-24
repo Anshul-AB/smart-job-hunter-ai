@@ -237,8 +237,15 @@ const getExternalJobs = async (req, res) => {
 };
 
 const analyzeJob = async (req, res) => {
+  let insight;
+  let aiUsed = true;
+
   try {
     const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     const userText = user.resume?.extractedText || "";
     const { description, title, company } = req.body;
@@ -247,28 +254,60 @@ const analyzeJob = async (req, res) => {
       return res.status(400).json({ message: "Job description missing" });
     }
 
-const userEmbedding = await getEmbedding(user.resume.extractedText);
-const jobEmbedding = await getEmbedding(description);
+    const userEmbedding = await getEmbedding(userText);
+    const jobEmbedding = await getEmbedding(description);
 
-const similarity = cosineSimilarity(userEmbedding, jobEmbedding);
+    const similarity = cosineSimilarity(userEmbedding, jobEmbedding);
+    const matchPercentage = Math.round(((similarity + 1) / 2) * 100);
 
-const matchPercentage = Math.round(((similarity + 1) / 2) * 100);
+    const jobSkills = extractSkills(description) || [];
+    const userSkills = user.resume?.extractedSkills || [];
 
-const jobSkills = extractSkills(description);
-const userSkills = user.resume?.extractedSkills || [];
+    // normalize once
+    const normalize = (arr) =>
+      arr.map(s => s.toLowerCase().trim());
 
-const insight = await generateAIInsight(
-  userSkills,
-  jobSkills,
-  matchPercentage,
-);
+    const userSet = new Set(normalize(userSkills));
+    const jobSet = new Set(normalize(jobSkills));
+
+    const missingSkills = jobSkills.filter(
+      skill => !userSet.has(skill.toLowerCase().trim())
+    );
+
+    try {
+      // PRIMARY (Gemini)
+      insight = await generateAIInsight(
+        userSkills,
+        jobSkills,
+        matchPercentage
+      );
+    } catch (aiError) {
+      aiUsed = false; // ✅ critical fix
+
+      console.error("AI failed, using fallback:", aiError?.status);
+
+      // FALLBACK
+      insight = {
+        summary: "AI insight unavailable. Showing basic analysis.",
+        strengths: userSkills.filter(skill =>
+          jobSet.has(skill.toLowerCase().trim())
+        ),
+        missingSkills,
+        suggestions: missingSkills
+          .slice(0, 5)
+          .map(s => `Learn or improve: ${s}`)
+      };
+    }
 
     return res.json({
       title,
       company,
       matchPercentage,
-        insight
-
+      userSkills,
+      jobSkills,
+      missingSkills,
+      insight,
+      aiUsed // ✅ now exposed to frontend
     });
 
   } catch (err) {
